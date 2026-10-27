@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Game Hub</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="games.js" defer></script>
+<script src="script.js" defer></script>
+<script src="bg.js" defer></script>
+<script src="settings.js" defer></script>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<header id="top">
+  <div class="bar">
+    <div class="brand"><span class="logo">▶</span>Game Hub</div>
+    <div class="search"><input id="q" type="search" placeholder="Search games" aria-label="Search games"></div>
+    <button class="btn ghost" id="settingsBtn" aria-haspopup="dialog">Settings</button>
+  </div>
+</header>
+
+<main>
+  <h1>Pick a game and play</h1>
+  <p class="sub" id="count"></p>
+  <div class="grid" id="grid"></div>
+</main>
+
+<section id="player" aria-label="Game player" aria-hidden="true">
+  <div class="pbar">
+    <button class="btn ghost" id="back">Back</button>
+    <h2 id="ptitle"></h2>
+    <button class="btn ghost" id="reload">Reload</button>
+    <button class="btn" id="full">Fullscreen</button>
+  </div>
+  <div class="frame">
+    <iframe id="gf" title="Game" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
+  </div>
+</section>
+
+</body>
+</html>
