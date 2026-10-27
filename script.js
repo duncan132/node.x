@@ -1,6 +1,7 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var grid = $("grid"), player = $("player"), frame = $("gf");
+  var note = "";
 
   function hue(s) {
     var h = 0;
@@ -51,10 +52,59 @@
     if (!shown) {
       var d = document.createElement("div");
       d.className = "empty";
-      d.textContent = GAMES.length ? "No games match your search." : "No games yet. Add some in games.js.";
+      d.textContent = GAMES.length ? "No games match your search." : (note || "No games yet. Add some in games.js.");
       grid.appendChild(d);
     }
-    $("count").textContent = GAMES.length + (GAMES.length === 1 ? " game" : " games");
+    $("count").textContent = note && !GAMES.length ? note : GAMES.length + (GAMES.length === 1 ? " game" : " games");
+  }
+
+  // ----- load a whole folder of games from GitHub -----
+  function prettify(file) {
+    return file.replace(/\.(html?|htm)$/i, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim()
+      .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function addFiles(names, base) {
+    var have = {};
+    GAMES.forEach(function (g) { have[g.file] = true; });
+    names.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+    names.forEach(function (n) {
+      var url = base + encodeURIComponent(n);
+      if (!have[url]) GAMES.push({ title: prettify(n), file: url });
+    });
+  }
+
+  function loadRemote(done) {
+    var s = typeof GAME_SOURCE !== "undefined" ? GAME_SOURCE : null;
+    if (!s || !s.repo || !s.user) return done();
+
+    var base = "https://" + s.user.toLowerCase() + ".github.io/" + s.repo + "/" + (s.folder ? s.folder + "/" : "");
+    var key = "gamehub.list." + s.user + "/" + s.repo + "/" + s.folder;
+
+    try {
+      var c = JSON.parse(localStorage.getItem(key));
+      if (c && Date.now() - c.t < 6 * 3600 * 1000 && c.list && c.list.length) {
+        addFiles(c.list, base);
+        return done();
+      }
+    } catch (e) {}
+
+    var api = "https://api.github.com/repos/" + s.user + "/" + s.repo + "/contents/" +
+              (s.folder || "") + "?ref=" + encodeURIComponent(s.branch || "main");
+    fetch(api)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (items) {
+        var names = items
+          .filter(function (i) { return i.type === "file" && /\.html?$/i.test(i.name); })
+          .map(function (i) { return i.name; });
+        if (!names.length) throw new Error("empty");
+        try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), list: names })); } catch (e) {}
+        addFiles(names, base);
+      })
+      .catch(function () {
+        note = "Couldn't load the game list from GitHub. Check the settings at the top of games.js.";
+      })
+      .then(done);
   }
 
   function play(g) {
@@ -88,5 +138,6 @@
 
   $("q").addEventListener("input", render);
 
-  render();
+  $("count").textContent = "Loading games…";
+  loadRemote(render);
 })();
