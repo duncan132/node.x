@@ -6,15 +6,20 @@
   <title>Node.x</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-view="games">
   <canvas id="bg"></canvas>
 
   <header class="topbar">
     <a class="logo" href="#">node<span>.x</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#" data-tab="games" class="active">Games</a>
+      <a href="#anime" data-tab="anime">Anime</a>
+    </nav>
     <input id="search" type="search" placeholder="Search games..." autocomplete="off">
     <button id="openSettings" class="icon-btn" aria-label="Settings">⚙</button>
   </header>
 
+  <!-- GAMES -->
   <main id="home">
     <section class="hero">
       <h1>Play anything.<br><span>Instantly.</span></h1>
@@ -41,11 +46,38 @@
     </section>
   </main>
 
-  <div id="player" hidden>
+  <!-- ANIME -->
+  <main id="animeView" hidden>
+    <div id="animeBrowse">
+      <section class="hero small">
+        <h1>Anime</h1>
+        <p id="animeCount"></p>
+      </section>
+
+      <section id="animeContinue" hidden>
+        <h2>Continue watching</h2>
+        <div id="animeContinueRow" class="row"></div>
+      </section>
+
+      <nav id="animeChips" class="chips" aria-label="Genres"></nav>
+
+      <section>
+        <div id="animeGrid" class="grid posters"></div>
+        <p id="animeEmpty" class="empty" hidden></p>
+      </section>
+    </div>
+
+    <div id="animeDetail" hidden></div>
+  </main>
+
+  <!-- GAME PLAYER -->
+  <div id="player" class="overlay" hidden>
     <div class="player-bar">
       <button id="backBtn" class="btn">← Back</button>
       <span id="playerTitle"></span>
       <div class="spacer"></div>
+      <span id="saveStatus" class="save-status"></span>
+      <button id="saveReset" class="icon-btn" hidden aria-label="Delete saved progress" title="Delete saved progress">🗑</button>
       <button id="playerFav" class="icon-btn" aria-label="Favorite">☆</button>
       <button id="reloadBtn" class="icon-btn" aria-label="Reload">⟳</button>
       <button id="fsBtn" class="icon-btn" aria-label="Fullscreen">⛶</button>
@@ -53,11 +85,28 @@
     <iframe id="frame" title="Game" allow="fullscreen; gamepad; autoplay; clipboard-write"></iframe>
   </div>
 
+  <!-- ANIME PLAYER -->
+  <div id="watcher" class="overlay" hidden>
+    <div class="player-bar">
+      <button id="watchBack" class="btn">← Episodes</button>
+      <span id="watchTitle"></span>
+      <div class="spacer"></div>
+      <button id="prevEp" class="icon-btn" aria-label="Previous episode" title="Previous episode">⏮</button>
+      <button id="nextEp" class="icon-btn" aria-label="Next episode" title="Next episode">⏭</button>
+      <button id="watchFs" class="icon-btn" aria-label="Fullscreen">⛶</button>
+    </div>
+    <div id="stage" class="stage"></div>
+  </div>
+
   <aside id="settingsPanel" hidden></aside>
 
+  <script src="util.js"></script>
   <script src="games.js"></script>
+  <script src="anime-data.js"></script>
+  <script src="saves.js"></script>
   <script src="settings.js"></script>
   <script src="bg.js"></script>
+  <script src="anime.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
