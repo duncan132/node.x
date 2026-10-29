@@ -48,7 +48,16 @@
 
       <label class="sp-row sp-check"><input type="checkbox" id="animate" ${s.animate ? "checked" : ""}> Animated background</label>
 
-      <button class="btn" id="resetSettings">Reset to default</button>`;
+      <div class="sp-row">Game and anime progress
+        <div class="sp-btns">
+          <button class="btn ghost" id="exportData">Export backup</button>
+          <button class="btn ghost" id="importData">Import backup</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <small class="muted" id="dataMsg">Progress is stored in this browser. Export a backup to move it to another device.</small>
+      </div>
+
+      <button class="btn" id="resetSettings">Reset colors and text</button>`;
   }
 
   panel.addEventListener("input", e => {
@@ -60,6 +69,8 @@
     apply();
   });
 
+  function msg(text) { const m = panel.querySelector("#dataMsg"); if (m) m.textContent = text; }
+
   panel.addEventListener("click", e => {
     const t = e.target;
     if (t.classList.contains("swatch")) {
@@ -70,7 +81,29 @@
       close();
     } else if (t.id === "resetSettings") {
       s = { ...DEFAULTS }; build(); apply();
+    } else if (t.id === "exportData") {
+      const blob = new Blob([JSON.stringify(NXSaves.exportAll(), null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "node-x-progress.json";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      msg("Backup downloaded.");
+    } else if (t.id === "importData") {
+      panel.querySelector("#importFile").click();
     }
+  });
+
+  panel.addEventListener("change", e => {
+    if (e.target.id !== "importFile") return;
+    const file = e.target.files[0];
+    if (!file) return;
+    file.text().then(txt => {
+      const n = NXSaves.importAll(JSON.parse(txt));
+      msg(`Imported ${n} item${n === 1 ? "" : "s"}. Reloading...`);
+      setTimeout(() => location.reload(), 700);
+    }).catch(() => msg("That file isn't a valid node.x backup."));
+    e.target.value = "";
   });
 
   function open() { panel.hidden = false; requestAnimationFrame(() => panel.classList.add("open")); }
