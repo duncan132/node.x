@@ -9,6 +9,28 @@
 <body data-view="games">
   <canvas id="bg"></canvas>
 
+  <script>
+    // Shows a red bar if a file didn't upload or the code hits an error, instead of a silent blank page.
+    (function () {
+      var shown = [];
+      function banner(msg) {
+        var b = document.getElementById("nx-error");
+        if (!b) {
+          b = document.createElement("div");
+          b.id = "nx-error";
+          b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:999;padding:.8rem 1rem;background:#b3261e;color:#fff;font:14px/1.4 system-ui,sans-serif";
+          document.body.appendChild(b);
+        }
+        if (shown.indexOf(msg) < 0) { shown.push(msg); b.textContent = shown.join("   |   "); }
+      }
+      window.addEventListener("error", function (e) {
+        var t = e.target;
+        if (t && t.tagName === "SCRIPT") banner("Couldn't load " + (t.getAttribute("src") || "a script") + ". Make sure it's uploaded in the same folder as index.html.");
+        else if (t === window) banner("Error: " + e.message + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : ""));
+      }, true);
+    })();
+  </script>
+
   <header class="topbar">
     <a class="logo" href="#">node<span>.x</span></a>
     <nav class="tabs" aria-label="Sections">
