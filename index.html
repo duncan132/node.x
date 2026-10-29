@@ -1,45 +1,63 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Game Hub</title>
-
-<link rel="stylesheet" href="style.css">
-
-<script src="games.js" defer></script>
-<script src="script.js" defer></script>
-<script src="bg.js" defer></script>
-<script src="settings.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Node.x</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="bg" aria-hidden="true"></canvas>
+  <canvas id="bg"></canvas>
 
-<header id="top">
-  <div class="bar">
-    <div class="brand"><span class="logo">▶</span>Game Hub</div>
-    <div class="search"><input id="q" type="search" placeholder="Search games" aria-label="Search games"></div>
-    <button class="btn ghost" id="settingsBtn" aria-haspopup="dialog">Settings</button>
+  <header class="topbar">
+    <a class="logo" href="#">node<span>.x</span></a>
+    <input id="search" type="search" placeholder="Search games..." autocomplete="off">
+    <button id="openSettings" class="icon-btn" aria-label="Settings">⚙</button>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <h1>Play anything.<br><span>Instantly.</span></h1>
+      <p id="count"></p>
+      <button id="randomBtn" class="btn">🎲 Random game</button>
+    </section>
+
+    <section id="recentSection" hidden>
+      <h2>Recently played</h2>
+      <div id="recentRow" class="row"></div>
+    </section>
+
+    <section id="favSection" hidden>
+      <h2>Favorites</h2>
+      <div id="favRow" class="row"></div>
+    </section>
+
+    <nav id="chips" class="chips" aria-label="Categories"></nav>
+
+    <section>
+      <h2 id="gridTitle">All games</h2>
+      <div id="grid" class="grid"></div>
+      <p id="empty" class="empty" hidden>No games found.</p>
+    </section>
+  </main>
+
+  <div id="player" hidden>
+    <div class="player-bar">
+      <button id="backBtn" class="btn">← Back</button>
+      <span id="playerTitle"></span>
+      <div class="spacer"></div>
+      <button id="playerFav" class="icon-btn" aria-label="Favorite">☆</button>
+      <button id="reloadBtn" class="icon-btn" aria-label="Reload">⟳</button>
+      <button id="fsBtn" class="icon-btn" aria-label="Fullscreen">⛶</button>
+    </div>
+    <iframe id="frame" title="Game" allow="fullscreen; gamepad; autoplay; clipboard-write"></iframe>
   </div>
-</header>
 
-<main>
-  <h1>Pick a game and play</h1>
-  <p class="sub" id="count"></p>
-  <div class="grid" id="grid"></div>
-</main>
+  <aside id="settingsPanel" hidden></aside>
 
-<section id="player" aria-label="Game player" aria-hidden="true">
-  <div class="pbar">
-    <button class="btn ghost" id="back">Back</button>
-    <h2 id="ptitle"></h2>
-    <button class="btn ghost" id="reload">Reload</button>
-    <button class="btn" id="full">Fullscreen</button>
-  </div>
-  <div class="frame">
-    <iframe id="gf" title="Game" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
-  </div>
-</section>
-
+  <script src="games.js"></script>
+  <script src="settings.js"></script>
+  <script src="bg.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
