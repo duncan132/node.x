@@ -141,24 +141,21 @@
     $("#animeView").hidden = v !== "anime";
     document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === v));
     const s = $("#search");
-    s.value = ""; s.placeholder = v === "games" ? "Search games..." : "Search anime...";
+    s.value = ""; s.hidden = v !== "games";
     query = ""; renderGrid();
-    NXAnime.search("");
     window.scrollTo(0, 0);
   }
 
   const dec = s => { try { return decodeURIComponent(s); } catch { return s; } };
 
-  // #play/<game>   #anime   #anime/<show>   #watch/<show>/<episode>
+  // #play/<game>   #anime
   function route() {
-    const [a, b, c] = location.hash.slice(1).split("/").map(dec);
+    const [a, b] = location.hash.slice(1).split("/").map(dec);
     const playing = a === "play" && byId[b];
     if (!playing) hidePlayer();
-    if (a !== "watch") NXAnime.closeWatcher();
 
     if (playing) { setView("games"); openGame(b); }
-    else if (a === "watch" && b && c) { setView("anime"); NXAnime.watch(b, Number(c)); }
-    else if (a === "anime") { setView("anime"); b ? NXAnime.showDetail(b) : NXAnime.showList(); }
+    else if (a === "anime") setView("anime");
     else setView("games");
   }
 

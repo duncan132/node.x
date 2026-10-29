@@ -48,7 +48,7 @@
 
       <label class="sp-row sp-check"><input type="checkbox" id="animate" ${s.animate ? "checked" : ""}> Animated background</label>
 
-      <div class="sp-row">Game and anime progress
+      <div class="sp-row">Game progress
         <div class="sp-btns">
           <button class="btn ghost" id="exportData">Export backup</button>
           <button class="btn ghost" id="importData">Import backup</button>

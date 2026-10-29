@@ -33,10 +33,8 @@
         var missing = [];
         if (typeof NXUtil === "undefined") missing.push("util.js");
         if (typeof GAMES === "undefined") missing.push("games.js");
-        if (typeof ANIME === "undefined") missing.push("anime-data.js");
         if (typeof NXSaves === "undefined") missing.push("saves.js");
         if (typeof NXSettings === "undefined") missing.push("settings.js");
-        if (typeof NXAnime === "undefined") missing.push("anime.js");
         var c = document.getElementById("count");
         if (c && !c.textContent) missing.push("script.js");
         if (missing.length) banner("Buttons won't work until these files are uploaded or replaced with the latest version: " + missing.join(", "));
@@ -48,7 +46,7 @@
     <a class="logo" href="#">node<span>.x</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="#" data-tab="games" class="active">Games</a>
-      <a href="#anime" data-tab="anime">Anime</a>
+      <a href="#anime" data-tab="anime">Manga &amp; Anime</a>
     </nav>
     <input id="search" type="search" placeholder="Search games..." autocomplete="off">
     <button id="openSettings" class="icon-btn" aria-label="Settings">⚙</button>
@@ -81,28 +79,25 @@
     </section>
   </main>
 
-  <!-- ANIME -->
+  <!-- MANGA & ANIME -->
   <main id="animeView" hidden>
-    <div id="animeBrowse">
-      <section class="hero small">
-        <h1>Anime</h1>
-        <p id="animeCount"></p>
-      </section>
+    <section class="hero small">
+      <h1>Manga &amp; anime</h1>
+      <p>Read manga and watch anime with Mangayomi, a free open-source app.</p>
+    </section>
 
-      <section id="animeContinue" hidden>
-        <h2>Continue watching</h2>
-        <div id="animeContinueRow" class="row"></div>
-      </section>
-
-      <nav id="animeChips" class="chips" aria-label="Genres"></nav>
-
-      <section>
-        <div id="animeGrid" class="grid posters"></div>
-        <p id="animeEmpty" class="empty" hidden></p>
-      </section>
-    </div>
-
-    <div id="animeDetail" hidden></div>
+    <section class="app-card">
+      <h2>Mangayomi</h2>
+      <p>Mangayomi is an app you install on your device, so it can't run inside this website. It doesn't include any content itself: you add your own sources inside the app.</p>
+      <ul class="platforms">
+        <li>Android</li><li>iOS</li><li>Windows</li><li>macOS</li><li>Linux</li>
+      </ul>
+      <div class="app-actions">
+        <a class="btn" href="https://github.com/kodjodevf/mangayomi/releases" target="_blank" rel="noopener">Download Mangayomi</a>
+        <a class="btn ghost" href="https://github.com/kodjodevf/mangayomi" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+      <p class="muted">On iPhone and iPad, install it with AltStore or SideStore. The links are on the Mangayomi GitHub page.</p>
+    </section>
   </main>
 
   <!-- GAME PLAYER -->
@@ -120,28 +115,13 @@
     <iframe id="frame" title="Game" allow="fullscreen; gamepad; autoplay; clipboard-write"></iframe>
   </div>
 
-  <!-- ANIME PLAYER -->
-  <div id="watcher" class="overlay" hidden>
-    <div class="player-bar">
-      <button id="watchBack" class="btn">← Episodes</button>
-      <span id="watchTitle"></span>
-      <div class="spacer"></div>
-      <button id="prevEp" class="icon-btn" aria-label="Previous episode" title="Previous episode">⏮</button>
-      <button id="nextEp" class="icon-btn" aria-label="Next episode" title="Next episode">⏭</button>
-      <button id="watchFs" class="icon-btn" aria-label="Fullscreen">⛶</button>
-    </div>
-    <div id="stage" class="stage"></div>
-  </div>
-
   <aside id="settingsPanel" hidden></aside>
 
   <script src="util.js"></script>
   <script src="games.js"></script>
-  <script src="anime-data.js"></script>
   <script src="saves.js"></script>
   <script src="settings.js"></script>
   <script src="bg.js"></script>
-  <script src="anime.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
