@@ -1,18 +1,17 @@
-// ===== Option 1: load a whole GitHub folder of games automatically =====
-// 1. Fork the games repo to your own GitHub account.
-// 2. Turn on GitHub Pages for the fork (Settings > Pages).
-// 3. Put YOUR GitHub username below. Leave repo as "" to turn this off.
-const GAME_SOURCE = {
-  user:   "duncan132",                    // your GitHub username
-  repo:   "Offline-HTML-Games-Pack",      // name of your fork ("" = off)
-  branch: "master",
-  folder: "offline"                       // folder that holds the game files
-};
-
-// ===== Option 2: add single games by hand =====
-//   title: name shown on the card
-//   file:  path or full link to the game's HTML file
-//   image: optional thumbnail. Leave it out to get a colored tile.
+// Add your games here. Only id, title and url are required.
+// cover: optional image path. If omitted, a cover is generated automatically.
+// emoji: shown on the generated cover.
 const GAMES = [
-  // { title: "Snake", file: "games/snake.html" },
+  { id: "slope",     title: "Slope",     url: "games/slope.html",     category: "Arcade",  emoji: "🎱" },
+  { id: "snake",     title: "Snake",     url: "games/snake.html",     category: "Arcade",  emoji: "🐍" },
+  { id: "2048",      title: "2048",      url: "games/2048.html",      category: "Puzzle",  emoji: "🔢" },
+  { id: "tetris",    title: "Tetris",    url: "games/tetris.html",    category: "Puzzle",  emoji: "🧱" },
+  { id: "racer",     title: "Racer",     url: "games/racer.html",     category: "Racing",  emoji: "🏎️" },
+  { id: "flappy",    title: "Flappy",    url: "games/flappy.html",    category: "Arcade",  emoji: "🐤" },
+  { id: "chess",     title: "Chess",     url: "games/chess.html",     category: "Strategy", emoji: "♟️" },
+  { id: "runner",    title: "Runner",    url: "games/runner.html",    category: "Action",  emoji: "🏃" },
+  { id: "shooter",   title: "Shooter",   url: "games/shooter.html",   category: "Action",  emoji: "🔫" },
+  { id: "platformer",title: "Platformer",url: "games/platformer.html",category: "Action",  emoji: "🍄" },
+  { id: "minesweep", title: "Minesweeper",url: "games/minesweeper.html",category: "Puzzle", emoji: "💣" },
+  { id: "pong",      title: "Pong",      url: "games/pong.html",      category: "Arcade",  emoji: "🏓" }
 ];
