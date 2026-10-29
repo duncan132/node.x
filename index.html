@@ -28,6 +28,19 @@
         if (t && t.tagName === "SCRIPT") banner("Couldn't load " + (t.getAttribute("src") || "a script") + ". Make sure it's uploaded in the same folder as index.html.");
         else if (t === window) banner("Error: " + e.message + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : ""));
       }, true);
+      // After everything has loaded, check that every piece is present and from the same version.
+      window.addEventListener("load", function () {
+        var missing = [];
+        if (typeof NXUtil === "undefined") missing.push("util.js");
+        if (typeof GAMES === "undefined") missing.push("games.js");
+        if (typeof ANIME === "undefined") missing.push("anime-data.js");
+        if (typeof NXSaves === "undefined") missing.push("saves.js");
+        if (typeof NXSettings === "undefined") missing.push("settings.js");
+        if (typeof NXAnime === "undefined") missing.push("anime.js");
+        var c = document.getElementById("count");
+        if (c && !c.textContent) missing.push("script.js");
+        if (missing.length) banner("Buttons won't work until these files are uploaded or replaced with the latest version: " + missing.join(", "));
+      });
     })();
   </script>
 
