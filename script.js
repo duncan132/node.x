@@ -1,10 +1,12 @@
-(() => {
+(async () => {
   const $ = s => document.querySelector(s);
   const { esc, genCover } = NXUtil;
   const store = {
     get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
+
+  await window.NXGamesReady;   // loader.js fills GAMES from your GitHub repo
 
   const byId = Object.fromEntries(GAMES.map(g => [g.id, g]));
   let favs = store.get("nx_favs", []).filter(id => byId[id]);
@@ -186,7 +188,7 @@
     timer = setTimeout(() => { query = e.target.value; renderGrid(); }, 120);
   });
 
-  $("#randomBtn").addEventListener("click", () => { location.hash = "play/" + encodeURIComponent(GAMES[Math.floor(Math.random() * GAMES.length)].id); });
+  $("#randomBtn").addEventListener("click", () => { if (!GAMES.length) return; location.hash = "play/" + encodeURIComponent(GAMES[Math.floor(Math.random() * GAMES.length)].id); });
   $("#backBtn").addEventListener("click", () => { location.hash = ""; });
   $("#reloadBtn").addEventListener("click", () => { if (currentId) frame.src = byId[currentId].url; });
   $("#fsBtn").addEventListener("click", () => { (frame.requestFullscreen || frame.webkitRequestFullscreen).call(frame); });
@@ -195,8 +197,13 @@
   window.addEventListener("hashchange", route);
 
   // ---------- init ----------
-  $("#count").textContent = `${GAMES.length} games ready to play`;
+  $("#count").textContent = GAMES.length ? `${GAMES.length} games ready to play` : "No games loaded";
   renderChips();
   renderAll();
+  if (!GAMES.length && window.NXLoadError) {
+    $("#empty").hidden = false;
+    $("#empty").innerHTML = `${esc(NXLoadError)} <button class="btn" onclick="location.reload()">Try again</button>`;
+  }
   route();
 })();
+
