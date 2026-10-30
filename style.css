@@ -1,12 +1,12 @@
 :root {
-  --accent: #ffffff;
+  --accent: #7c5cff;
   --on-accent: #000000;
-  --bg: #000000;
-  --card: #0b0b0b;
-  --text: #f2f2f2;
+  --bg: #0b0b14;
+  --card: #161625;
+  --text: #eceaff;
   --muted: color-mix(in srgb, var(--text) 55%, transparent);
-  --line: color-mix(in srgb, var(--text) 16%, transparent);
-  --radius: 14px;
+  --line: color-mix(in srgb, var(--text) 12%, transparent);
+  --radius: 16px;
 }
 
 * { box-sizing: border-box; margin: 0; }
