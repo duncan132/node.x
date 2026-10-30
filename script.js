@@ -1,4 +1,5 @@
 (async () => {
+  window.NXScriptLoaded = true;   // lets index.html know this file arrived
   const $ = s => document.querySelector(s);
   const { esc, genCover } = NXUtil;
   const store = {
@@ -9,11 +10,13 @@
   await window.NXGamesReady;   // loader.js fills GAMES from your GitHub repo
 
   const byId = Object.fromEntries(GAMES.map(g => [g.id, g]));
+  const siteById = Object.fromEntries(ANIME_SITES.map(s => [s.id, s]));
   let favs = store.get("nx_favs", []).filter(id => byId[id]);
   let recent = store.get("nx_recent", []).filter(id => byId[id]);
-  let cat = "All", query = "", currentId = null;
+  let cat = "All", query = "", currentId = null, currentSite = null, view = "";
 
   const grid = $("#grid"), chips = $("#chips"), player = $("#player"), frame = $("#frame");
+  const sitePlayer = $("#sitePlayer"), siteFrame = $("#siteFrame");
 
   // ---------- covers ----------
   function coverSrc(c) {
@@ -34,6 +37,13 @@
       </div>
       <div class="meta"><b>${esc(g.title)}</b><small>${esc(g.category || "Game")}</small></div>
     </div>`;
+  }
+
+  function siteCard(s) {
+    return `<a class="card site" href="#site/${encodeURIComponent(s.id)}">
+      <div class="cover">${cover(s)}</div>
+      <div class="meta"><b>${esc(s.title)}</b><small>${esc(s.description || "Website")}</small></div>
+    </a>`;
   }
 
   // ---------- rendering ----------
@@ -63,6 +73,11 @@
     renderRow($("#recentRow"), $("#recentSection"), recent.slice(0, 10));
     renderRow($("#favRow"), $("#favSection"), favs);
     renderGrid();
+  }
+
+  function renderSites() {
+    $("#siteGrid").innerHTML = ANIME_SITES.map(siteCard).join("");
+    $("#siteEmpty").hidden = ANIME_SITES.length > 0;
   }
 
   // ---------- favorites ----------
@@ -100,6 +115,27 @@
     renderAll();
   }
 
+  // ---------- anime and manga sites ----------
+  function openSite(id) {
+    const s = siteById[id];
+    if (!s || (currentSite === id && !sitePlayer.hidden)) return;
+    currentSite = id;
+    $("#siteTitle").textContent = s.title;
+    $("#siteOpen").href = s.url;
+    siteFrame.src = s.url;
+    sitePlayer.hidden = false;
+    document.body.classList.add("playing");
+  }
+
+  function hideSite() {
+    if (sitePlayer.hidden) return;
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    siteFrame.src = "about:blank";
+    sitePlayer.hidden = true;
+    document.body.classList.remove("playing");
+    currentSite = null;
+  }
+
   // ---------- game saves (postMessage bridge, see nx-save.js) ----------
   function sendLoaded() {
     const g = byId[currentId];
@@ -134,14 +170,38 @@
     frame.src = byId[currentId].url;
   });
 
-  // ---------- routing ----------
+  // ---------- views + routing ----------
+  function setView(v) {
+    if (v === view) return;
+    view = v;
+    document.body.dataset.view = v;
+    $("#landing").hidden = v !== "home";
+    $("#home").hidden = v !== "games";
+    $("#animeView").hidden = v !== "anime";
+    document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === v));
+    const s = $("#search");
+    s.value = ""; s.hidden = v !== "games";
+    query = ""; renderGrid();
+    window.scrollTo(0, 0);
+  }
+
   const dec = s => { try { return decodeURIComponent(s); } catch { return s; } };
 
-  // #play/<game> opens a game; anything else shows the home screen
+  // #            home (pick Games or Anime and Manga)
+  // #games       the games     #play/<game>   a game
+  // #anime       the sites     #site/<site>   a site
   function route() {
     const [a, b] = location.hash.slice(1).split("/").map(dec);
-    if (a === "play" && byId[b]) openGame(b);
-    else hidePlayer();
+    const game = a === "play" && byId[b];
+    const site = a === "site" && siteById[b];
+    if (!game) hidePlayer();
+    if (!site) hideSite();
+
+    if (game) { setView("games"); openGame(b); }
+    else if (site) { setView("anime"); openSite(b); }
+    else if (a === "games") setView("games");
+    else if (a === "anime") setView("anime");
+    else setView("home");
   }
 
   // ---------- events ----------
@@ -171,17 +231,29 @@
   });
 
   $("#randomBtn").addEventListener("click", () => { if (!GAMES.length) return; location.hash = "play/" + encodeURIComponent(GAMES[Math.floor(Math.random() * GAMES.length)].id); });
-  $("#backBtn").addEventListener("click", () => { location.hash = ""; });
+  $("#backBtn").addEventListener("click", () => { location.hash = "games"; });
   $("#reloadBtn").addEventListener("click", () => { if (currentId) frame.src = byId[currentId].url; });
   $("#fsBtn").addEventListener("click", () => { (frame.requestFullscreen || frame.webkitRequestFullscreen).call(frame); });
   $("#playerFav").addEventListener("click", () => currentId && toggleFav(currentId));
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && !player.hidden && !document.fullscreenElement) location.hash = ""; });
+
+  $("#siteBack").addEventListener("click", () => { location.hash = "anime"; });
+  $("#siteReload").addEventListener("click", () => { if (currentSite) siteFrame.src = siteById[currentSite].url; });
+  $("#siteFs").addEventListener("click", () => { (siteFrame.requestFullscreen || siteFrame.webkitRequestFullscreen).call(siteFrame); });
+
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape" || document.fullscreenElement) return;
+    if (!player.hidden) location.hash = "games";
+    else if (!sitePlayer.hidden) location.hash = "anime";
+  });
   window.addEventListener("hashchange", route);
 
   // ---------- init ----------
   $("#count").textContent = GAMES.length ? `${GAMES.length} games ready to play` : "No games loaded";
+  $("#pickGames").textContent = GAMES.length ? `${GAMES.length} games` : "Play in your browser";
+  $("#pickAnime").textContent = ANIME_SITES.length === 1 ? "1 site" : `${ANIME_SITES.length} sites`;
   renderChips();
   renderAll();
+  renderSites();
   if (!GAMES.length && window.NXLoadError) {
     $("#empty").hidden = false;
     $("#empty").innerHTML = `${esc(NXLoadError)} <button class="btn" onclick="location.reload()">Try again</button>`;

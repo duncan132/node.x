@@ -1,27 +1,38 @@
 (() => {
+  const BGS = [["stars", "Warp stars"], ["network", "Network"], ["matrix", "Matrix rain"], ["waves", "Waves"], ["grid", "Retro grid"], ["orbs", "Glow orbs"], ["none", "Off"]];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const DEFAULTS = {
     fontSize: 16,
-    accent: "#7c5cff",
-    bg: "#0b0b14",
-    card: "#161625",
-    text: "#eceaff",
-    animate: true
+    accent: "#ffffff",
+    bg: "#000000",
+    card: "#0b0b0b",
+    text: "#f2f2f2",
+    bgStyle: reduce ? "none" : "stars"
   };
-  const ACCENTS = ["#7c5cff","#ff4d6d","#ff9f1c","#2ec4b6","#3a86ff","#06d6a0","#f72585","#ffd60a","#8ac926","#ff6b35","#00b4d8","#e5e5e5"];
+  const ACCENTS = ["#ffffff", "#e0e0e0", "#bdbdbd", "#9e9e9e", "#757575", "#4d4d4d"];
+  const KEY = "nx_settings_v2";
 
   const panel = document.getElementById("settingsPanel");
   let s;
-  try { s = { ...DEFAULTS, ...JSON.parse(localStorage.getItem("nx_settings") || "{}") }; }
+  try { s = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; }
   catch { s = { ...DEFAULTS }; }
+  if (!BGS.some(b => b[0] === s.bgStyle)) s.bgStyle = DEFAULTS.bgStyle;
+
+  function onAccent(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+    return lum > 150 ? "#000000" : "#ffffff";
+  }
 
   function apply() {
     const r = document.documentElement.style;
     r.fontSize = s.fontSize + "px";
     r.setProperty("--accent", s.accent);
+    r.setProperty("--on-accent", onAccent(s.accent));
     r.setProperty("--bg", s.bg);
     r.setProperty("--card", s.card);
     r.setProperty("--text", s.text);
-    try { localStorage.setItem("nx_settings", JSON.stringify(s)); } catch {}
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {}
     window.dispatchEvent(new CustomEvent("settingschange", { detail: s }));
   }
 
@@ -29,11 +40,17 @@
     panel.innerHTML = `
       <div class="sp-head"><h3>Settings</h3><button class="icon-btn" id="closeSettings" aria-label="Close">✕</button></div>
 
+      <div class="sp-row">Animated background
+        <div class="bg-choices" id="bgChoices">
+          ${BGS.map(([id, name]) => `<button class="bg-opt ${s.bgStyle === id ? "active" : ""}" data-bg="${id}">${name}</button>`).join("")}
+        </div>
+      </div>
+
       <label class="sp-row">Text size <b id="fsVal">${s.fontSize}px</b>
         <input type="range" id="fontSize" min="12" max="24" step="1" value="${s.fontSize}">
       </label>
 
-      <div class="sp-row">Accent color
+      <div class="sp-row">Accent
         <div class="swatches" id="swatches">
           ${ACCENTS.map(c => `<button class="swatch" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join("")}
         </div>
@@ -46,8 +63,6 @@
         <label>Text <input type="color" data-key="text" value="${s.text}"></label>
       </div>
 
-      <label class="sp-row sp-check"><input type="checkbox" id="animate" ${s.animate ? "checked" : ""}> Animated background</label>
-
       <div class="sp-row">Game progress
         <div class="sp-btns">
           <button class="btn ghost" id="exportData">Export backup</button>
@@ -57,14 +72,13 @@
         <small class="muted" id="dataMsg">Progress is stored in this browser. Export a backup to move it to another device.</small>
       </div>
 
-      <button class="btn" id="resetSettings">Reset colors and text</button>`;
+      <button class="btn" id="resetSettings">Reset appearance</button>`;
   }
 
   panel.addEventListener("input", e => {
     const t = e.target;
     if (t.id === "fontSize") { s.fontSize = +t.value; panel.querySelector("#fsVal").textContent = t.value + "px"; }
     else if (t.dataset.key) { s[t.dataset.key] = t.value; }
-    else if (t.id === "animate") { s.animate = t.checked; }
     else return;
     apply();
   });
@@ -72,10 +86,15 @@
   function msg(text) { const m = panel.querySelector("#dataMsg"); if (m) m.textContent = text; }
 
   panel.addEventListener("click", e => {
-    const t = e.target;
+    const t = e.target.closest("button");
+    if (!t) return;
     if (t.classList.contains("swatch")) {
       s.accent = t.dataset.c;
       panel.querySelector('[data-key="accent"]').value = s.accent;
+      apply();
+    } else if (t.classList.contains("bg-opt")) {
+      s.bgStyle = t.dataset.bg;
+      panel.querySelectorAll(".bg-opt").forEach(b => b.classList.toggle("active", b === t));
       apply();
     } else if (t.id === "closeSettings") {
       close();

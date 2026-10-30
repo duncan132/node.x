@@ -6,7 +6,7 @@
   <title>Node.x</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-view="home">
   <canvas id="bg"></canvas>
 
   <script>
@@ -18,7 +18,7 @@
         if (!b) {
           b = document.createElement("div");
           b.id = "nx-error";
-          b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:999;padding:.8rem 1rem;background:#b3261e;color:#fff;font:14px/1.4 system-ui,sans-serif";
+          b.style.cssText = "position:fixed;left:0;right:0;top:0;z-index:999;padding:.8rem 1rem;background:#b3261e;color:#fff;font:14px/1.4 system-ui,sans-serif";
           document.body.appendChild(b);
         }
         if (shown.indexOf(msg) < 0) { shown.push(msg); b.textContent = shown.join("   |   "); }
@@ -34,10 +34,10 @@
         if (typeof NXUtil === "undefined") missing.push("util.js");
         if (typeof GAMES === "undefined") missing.push("games.js");
         if (typeof NXGamesReady === "undefined") missing.push("loader.js");
+        if (typeof ANIME_SITES === "undefined") missing.push("anime-sites.js");
         if (typeof NXSaves === "undefined") missing.push("saves.js");
         if (typeof NXSettings === "undefined") missing.push("settings.js");
-        var c = document.getElementById("count");
-        if (c && !c.textContent) missing.push("script.js");
+        if (!window.NXScriptLoaded) missing.push("script.js");
         if (missing.length) banner("Buttons won't work until these files are uploaded or replaced with the latest version: " + missing.join(", "));
       });
     })();
@@ -45,15 +45,32 @@
 
   <header class="topbar">
     <a class="logo" href="#">node<span>.x</span></a>
-    <input id="search" type="search" placeholder="Search games..." autocomplete="off">
-    <button id="openSettings" class="icon-btn" aria-label="Settings">⚙</button>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#games" data-tab="games">Games</a>
+      <a href="#anime" data-tab="anime">Anime and Manga</a>
+    </nav>
+    <input id="search" type="search" placeholder="Search games..." autocomplete="off" hidden>
+    <button id="openSettings" class="icon-btn" aria-label="Settings">⚙&#65038;</button>
   </header>
 
-  <main id="home">
-    <section class="hero">
-      <h1>Play anything.<br><span>Instantly.</span></h1>
+  <!-- HOME: pick where to go -->
+  <main id="landing">
+    <section class="landing-hero">
+      <h1>node<span>.x</span></h1>
+      <p>Choose where you want to go</p>
+    </section>
+    <nav class="dock" aria-label="Choose a section">
+      <a class="pick" href="#games"><b>Games</b><small id="pickGames"></small></a>
+      <a class="pick" href="#anime"><b>Anime and Manga</b><small id="pickAnime"></small></a>
+    </nav>
+  </main>
+
+  <!-- GAMES -->
+  <main id="home" hidden>
+    <section class="hero small">
+      <h1>Games</h1>
       <p id="count">Loading games...</p>
-      <button id="randomBtn" class="btn">🎲 Random game</button>
+      <button id="randomBtn" class="btn">Random game</button>
     </section>
 
     <section id="recentSection" hidden>
@@ -75,6 +92,18 @@
     </section>
   </main>
 
+  <!-- ANIME AND MANGA -->
+  <main id="animeView" hidden>
+    <section class="hero small">
+      <h1>Anime and Manga</h1>
+      <p>Pick a site to open it right here.</p>
+    </section>
+    <section>
+      <div id="siteGrid" class="grid sites"></div>
+      <p id="siteEmpty" class="empty" hidden>No sites yet. Add one in anime-sites.js.</p>
+    </section>
+  </main>
+
   <!-- GAME PLAYER -->
   <div id="player" class="overlay" hidden>
     <div class="player-bar">
@@ -82,7 +111,7 @@
       <span id="playerTitle"></span>
       <div class="spacer"></div>
       <span id="saveStatus" class="save-status"></span>
-      <button id="saveReset" class="icon-btn" hidden aria-label="Delete saved progress" title="Delete saved progress">🗑</button>
+      <button id="saveReset" class="btn ghost" hidden aria-label="Delete saved progress" title="Delete saved progress">Reset save</button>
       <button id="playerFav" class="icon-btn" aria-label="Favorite">☆</button>
       <button id="reloadBtn" class="icon-btn" aria-label="Reload">⟳</button>
       <button id="fsBtn" class="icon-btn" aria-label="Fullscreen">⛶</button>
@@ -90,11 +119,26 @@
     <iframe id="frame" title="Game" allow="fullscreen; gamepad; autoplay; clipboard-write"></iframe>
   </div>
 
+  <!-- SITE PLAYER (anime and manga) -->
+  <div id="sitePlayer" class="overlay" hidden>
+    <div class="player-bar">
+      <button id="siteBack" class="btn">← Back</button>
+      <span id="siteTitle"></span>
+      <div class="spacer"></div>
+      <span class="save-status">Not loading? Open it in a new tab →</span>
+      <a id="siteOpen" class="icon-btn" href="#" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab">↗</a>
+      <button id="siteReload" class="icon-btn" aria-label="Reload">⟳</button>
+      <button id="siteFs" class="icon-btn" aria-label="Fullscreen">⛶</button>
+    </div>
+    <iframe id="siteFrame" title="Site" allow="fullscreen; autoplay; encrypted-media; picture-in-picture"></iframe>
+  </div>
+
   <aside id="settingsPanel" hidden></aside>
 
   <script src="util.js"></script>
   <script src="games.js"></script>
   <script src="loader.js"></script>
+  <script src="anime-sites.js"></script>
   <script src="saves.js"></script>
   <script src="settings.js"></script>
   <script src="bg.js"></script>
