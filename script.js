@@ -11,7 +11,7 @@
   const byId = Object.fromEntries(GAMES.map(g => [g.id, g]));
   let favs = store.get("nx_favs", []).filter(id => byId[id]);
   let recent = store.get("nx_recent", []).filter(id => byId[id]);
-  let cat = "All", query = "", currentId = null, view = "";
+  let cat = "All", query = "", currentId = null;
 
   const grid = $("#grid"), chips = $("#chips"), player = $("#player"), frame = $("#frame");
 
@@ -134,31 +134,14 @@
     frame.src = byId[currentId].url;
   });
 
-  // ---------- views + routing ----------
-  function setView(v) {
-    if (v === view) return;
-    view = v;
-    document.body.dataset.view = v;
-    $("#home").hidden = v !== "games";
-    $("#animeView").hidden = v !== "anime";
-    document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === v));
-    const s = $("#search");
-    s.value = ""; s.hidden = v !== "games";
-    query = ""; renderGrid();
-    window.scrollTo(0, 0);
-  }
-
+  // ---------- routing ----------
   const dec = s => { try { return decodeURIComponent(s); } catch { return s; } };
 
-  // #play/<game>   #anime
+  // #play/<game> opens a game; anything else shows the home screen
   function route() {
     const [a, b] = location.hash.slice(1).split("/").map(dec);
-    const playing = a === "play" && byId[b];
-    if (!playing) hidePlayer();
-
-    if (playing) { setView("games"); openGame(b); }
-    else if (a === "anime") setView("anime");
-    else setView("games");
+    if (a === "play" && byId[b]) openGame(b);
+    else hidePlayer();
   }
 
   // ---------- events ----------
@@ -183,7 +166,6 @@
 
   let timer;
   $("#search").addEventListener("input", e => {
-    if (view !== "games") return;
     clearTimeout(timer);
     timer = setTimeout(() => { query = e.target.value; renderGrid(); }, 120);
   });
@@ -206,4 +188,3 @@
   }
   route();
 })();
-

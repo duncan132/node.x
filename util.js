@@ -2,7 +2,7 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const hash = str => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); };
 
-  // Generated cover (gradient + emoji or first letter). Used whenever a game/anime has no image.
+  // Generated cover (gradient + emoji or first letter). Used whenever a game has no image.
   const genCover = (title, icon) =>
     `<div class="gen-cover" style="--h:${hash(title) % 360}"><span>${esc(icon || title.trim().charAt(0).toUpperCase())}</span></div>`;
 

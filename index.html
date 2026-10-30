@@ -6,7 +6,7 @@
   <title>Node.x</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-view="games">
+<body>
   <canvas id="bg"></canvas>
 
   <script>
@@ -45,15 +45,10 @@
 
   <header class="topbar">
     <a class="logo" href="#">node<span>.x</span></a>
-    <nav class="tabs" aria-label="Sections">
-      <a href="#" data-tab="games" class="active">Games</a>
-      <a href="#anime" data-tab="anime">Manga &amp; Anime</a>
-    </nav>
     <input id="search" type="search" placeholder="Search games..." autocomplete="off">
     <button id="openSettings" class="icon-btn" aria-label="Settings">⚙</button>
   </header>
 
-  <!-- GAMES -->
   <main id="home">
     <section class="hero">
       <h1>Play anything.<br><span>Instantly.</span></h1>
@@ -77,27 +72,6 @@
       <h2 id="gridTitle">All games</h2>
       <div id="grid" class="grid"></div>
       <p id="empty" class="empty" hidden>No games found.</p>
-    </section>
-  </main>
-
-  <!-- MANGA & ANIME -->
-  <main id="animeView" hidden>
-    <section class="hero small">
-      <h1>Manga &amp; anime</h1>
-      <p>Read manga and watch anime with Mangayomi, a free open-source app.</p>
-    </section>
-
-    <section class="app-card">
-      <h2>Mangayomi</h2>
-      <p>Mangayomi is an app you install on your device, so it can't run inside this website. It doesn't include any content itself: you add your own sources inside the app.</p>
-      <ul class="platforms">
-        <li>Android</li><li>iOS</li><li>Windows</li><li>macOS</li><li>Linux</li>
-      </ul>
-      <div class="app-actions">
-        <a class="btn" href="https://github.com/kodjodevf/mangayomi/releases" target="_blank" rel="noopener">Download Mangayomi</a>
-        <a class="btn ghost" href="https://github.com/kodjodevf/mangayomi" target="_blank" rel="noopener">View on GitHub</a>
-      </div>
-      <p class="muted">On iPhone and iPad, install it with AltStore or SideStore. The links are on the Mangayomi GitHub page.</p>
     </section>
   </main>
 
