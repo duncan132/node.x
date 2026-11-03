@@ -391,6 +391,9 @@ const RAW={cover:"https://raw.githubusercontent.com/duncan132/assets/main",html:
 let Z=[],fl=[],shown=0,tag="all",loaded=false,tok=0,curHtml="",curG=null;
 const getJ=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return[]}},setJ=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let favs=getJ("nx_fav"),rec=getJ("nx_recent");
+const COVERS=["https://cdn.jsdelivr.net/gh/gn-math/covers@main","https://raw.githubusercontent.com/gn-math/covers/main","https://cdn.jsdelivr.net/gh/duncan132/covers@main","https://raw.githubusercontent.com/duncan132/covers/main",CDN.cover,RAW.cover];
+const coverUrl=(c,n)=>c.split("{COVER_URL}").join(COVERS[n]);
+function cf(i){const n=+i.dataset.n+1;if(n<COVERS.length){i.dataset.n=n;i.src=coverUrl(i.dataset.c,n)}else{i.onerror=null;i.src=DEF}}
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fill=(u,b)=>u.split("{COVER_URL}").join(b.cover).split("{HTML_URL}").join(b.html);
 async function getList(){for(const u of [CDN.cover+"/zones.json",RAW.cover+"/zones.json"]){try{const r=await fetch(u);if(r.ok)return await r.json()}catch(e){}}throw new Error("x")}
@@ -402,7 +405,7 @@ function filt(){const q=$("#gq").value.trim().toLowerCase();
  fl=base.filter(g=>!q||g.name.toLowerCase().includes(q));
  shown=0;$("#lg").innerHTML="";$("#gcount").textContent=fl.length+" games";more()}
 function more(){const f=fl.slice(shown,shown+60);shown+=f.length;
- $("#lg").insertAdjacentHTML("beforeend",f.map(g=>`<div class="lw"><button class="lc" data-id="${g.id}"><img loading="lazy" alt="" src="${esc(fill(g.cover,CDN))}" onerror="this.onerror=null;this.src='${esc(fill(g.cover,RAW))}'"><span>${esc(g.name)}</span></button><button class="hrt ${favs.includes(g.id)?"on":""}" data-h="${g.id}" aria-label="Favorite">&#9829;</button></div>`).join(""));
+ $("#lg").insertAdjacentHTML("beforeend",f.map(g=>`<div class="lw"><button class="lc" data-id="${g.id}"><img loading="lazy" alt="" data-c="${esc(g.cover)}" data-n="0" src="${esc(coverUrl(g.cover,0))}" onerror="cf(this)"><span>${esc(g.name)}</span></button><button class="hrt ${favs.includes(g.id)?"on":""}" data-h="${g.id}" aria-label="Favorite">&#9829;</button></div>`).join(""));
  $("#more").hidden=shown>=fl.length}
 $("#more").onclick=more;$("#gq").oninput=filt;
 function toggleFav(id){id=+id;favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];setJ("nx_fav",favs);
