@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Games</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #181b22; --panel-2: #1f232c; --line: #2a2f3a;
+    --text: #e8eaf0; --muted: #8b93a3; --accent: #6ea8ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; display: flex; gap: 12px; align-items: center;
+    padding: 12px 16px; background: rgba(15,17,21,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: .2px; }
+  #search { flex: 1; min-width: 0; max-width: 520px; padding: 9px 12px; color: var(--text);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+  #search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  label.toggle { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; white-space: nowrap; }
+  #count { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  main { padding: 16px; }
+  #grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .card { display: flex; flex-direction: column; overflow: hidden; text-align: left; padding: 0; cursor: pointer;
+    color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+  .card:hover, .card:focus-visible { border-color: var(--accent); outline: none; transform: translateY(-1px); }
+  .thumb { aspect-ratio: 4 / 3; display: grid; place-items: center; font-size: 34px; font-weight: 700;
+    color: rgba(255,255,255,.85); background: var(--panel-2); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .meta { padding: 8px 10px 10px; }
+  .name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  #empty { display: none; padding: 48px 0; text-align: center; color: var(--muted); }
+
+  #player { position: fixed; inset: 0; z-index: 10; display: none; flex-direction: column; background: #000; }
+  #player.open { display: flex; }
+  #bar { display: flex; gap: 8px; align-items: center; padding: 8px 12px; background: var(--panel);
+    border-bottom: 1px solid var(--line); }
+  #bar .title { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #bar button, #bar a { padding: 7px 12px; color: var(--text); background: var(--panel-2); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 7px; font: inherit; font-size: 13px; cursor: pointer; }
+  #bar button:hover, #bar a:hover { border-color: var(--accent); }
+  #bar button[hidden] { display: none; }
+  #frame { flex: 1; width: 100%; border: 0; background: #000; }
+  #status { position: absolute; top: 56px; left: 0; right: 0; padding: 24px; text-align: center; color: var(--muted); pointer-events: none; }
+  #status a { color: var(--accent); pointer-events: auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Games</h1>
+  <input id="search" type="search" placeholder="Search games or an id number" autocomplete="off" autofocus>
+  <label class="toggle"><input id="showBroken" type="checkbox"> show known-broken</label>
+  <span id="count"></span>
+</header>
+<main>
+  <div id="grid"></div>
+  <div id="empty">No games match that search.</div>
+</main>
+
+<div id="player" role="dialog" aria-label="Game player">
+  <div id="bar">
+    <button id="back" type="button">&larr; Back</button>
+    <span class="title" id="ptitle"></span>
+    <button id="alt" type="button" hidden>Try another version</button>
+    <a id="raw" target="_blank" rel="noopener">Open in tab</a>
+    <button id="full" type="button">Fullscreen</button>
+  </div>
+  <div id="status"></div>
+  <iframe id="frame" title="Game"
+    allow="fullscreen; autoplay; gamepad; clipboard-write; accelerometer; gyroscope"
+    sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-forms allow-modals allow-downloads"></iframe>
+</div>
+
+<script>
+// ---- Settings: change these if your repos or branch are named differently ----
+const GITHUB_USER   = 'duncan132';
+const HTML_REPO     = 'html';
+const ASSETS_REPO   = 'assets';
+const BRANCH        = 'main';
+// Games are loaded from this folder first (works on GitHub Pages / any static host),
+// then from jsDelivr as a fallback.
+const HTML_SOURCES  = ['./', `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${HTML_REPO}@${BRANCH}/`];
+const ASSETS_CDN    = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${ASSETS_REPO}@${BRANCH}/`;
+
+const $ = id => document.getElementById(id);
+const grid = $('grid'), search = $('search'), showBroken = $('showBroken');
+let games = [], current = null, versionIdx = 0;
+
+const hue = n => (n * 47) % 360;
+
+function card(g) {
+  const b = document.createElement('button');
+  b.className = 'card'; b.type = 'button';
+  const t = document.createElement('div'); t.className = 'thumb';
+  t.style.background = `linear-gradient(135deg, hsl(${hue(g.id)} 45% 26%), hsl(${hue(g.id) + 40} 45% 18%))`;
+  if (g.cover) {
+    const img = new Image(); img.loading = 'lazy'; img.alt = '';
+    img.src = ASSETS_CDN + g.cover;
+    img.onerror = () => { img.remove(); t.textContent = initials(g); };
+    t.appendChild(img);
+  } else t.textContent = initials(g);
+  const m = document.createElement('div'); m.className = 'meta';
+  const n = document.createElement('div'); n.className = 'name'; n.textContent = g.name; n.title = g.name;
+  const s = document.createElement('div'); s.className = 'sub';
+  s.textContent = '#' + g.id + (g.broken ? ' · broken' : '');
+  m.append(n, s); b.append(t, m);
+  b.addEventListener('click', () => openGame(g));
+  return b;
+}
+function initials(g) {
+  const w = g.name.replace(/^Game #/, '').split(/\s+/).filter(Boolean);
+  return (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || '?').slice(0, 2)).toUpperCase();
+}
+
+function render() {
+  const q = search.value.trim().toLowerCase();
+  const list = games.filter(g =>
+    (showBroken.checked || !g.broken) &&
+    (!q || g.name.toLowerCase().includes(q) || String(g.id) === q || ('#' + g.id) === q));
+  grid.replaceChildren(...list.map(card));
+  $('empty').style.display = list.length ? 'none' : 'block';
+  $('count').textContent = list.length + ' / ' + games.length;
+}
+
+async function fetchGame(file) {
+  let lastErr;
+  for (const base of HTML_SOURCES) {
+    try {
+      const r = await fetch(base + encodeURIComponent(file).replace(/%2F/g, '/'), { cache: 'no-cache' });
+      if (r.ok) return { html: await r.text(), url: new URL(base + file, location.href).href };
+      lastErr = new Error('HTTP ' + r.status);
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Could not load ' + file);
+}
+
+async function openGame(g, idx = 0) {
+  current = g; versionIdx = idx;
+  const files = [g.file, ...(g.alts || [])];
+  const file = files[idx % files.length];
+  $('ptitle').textContent = g.name + (files.length > 1 ? `  (version ${idx % files.length + 1}/${files.length})` : '');
+  $('alt').hidden = files.length < 2;
+  $('player').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  history.replaceState(null, '', '#' + g.id);
+  const status = $('status'), frame = $('frame');
+  status.textContent = 'Loading…'; frame.srcdoc = '';
+  try {
+    const { html, url } = await fetchGame(file);
+    $('raw').href = url;
+    frame.srcdoc = html;
+    status.textContent = '';
+    frame.addEventListener('load', () => frame.focus(), { once: true });
+  } catch (e) {
+    status.innerHTML = '';
+    status.append('Couldn’t load this game (' + e.message + '). ');
+    const a = document.createElement('a');
+    a.href = HTML_SOURCES[HTML_SOURCES.length - 1] + file; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = 'Open the file directly'; status.append(a, '.');
+  }
+}
+
+function closeGame() {
+  $('player').classList.remove('open');
+  $('frame').srcdoc = ''; document.body.style.overflow = '';
+  history.replaceState(null, '', location.pathname + location.search);
+  current = null;
+}
+
+$('back').addEventListener('click', closeGame);
+$('alt').addEventListener('click', () => current && openGame(current, versionIdx + 1));
+$('full').addEventListener('click', () => {
+  const f = $('frame');
+  (f.requestFullscreen || f.webkitRequestFullscreen || (() => {})).call(f);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && current) closeGame(); });
+search.addEventListener('input', render);
+showBroken.addEventListener('change', render);
+
+(async () => {
+  try {
+    const r = await fetch('games.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    games = await r.json();
+  } catch (e) {
+    grid.textContent = 'Could not load games.json (' + e.message + '). Make sure it sits next to index.html.';
+    return;
+  }
+  render();
+  const id = parseInt(location.hash.slice(1), 10);
+  const g = games.find(x => x.id === id);
+  if (g) openGame(g);
+})();
+</script>
+</body>
+</html>
